@@ -11,7 +11,7 @@ The GraphQL we are working specifically with comes from the [2018 GraphQL Specif
 **Table of Contents**
 
 - [Getting Started]()
-- [Examples]
+- [Examples]()
 - [Table of Conversions]()
 - [To Do]()
 - [More Notes]()
@@ -181,20 +181,18 @@ Other
 - ID is a special Type -- handle as a one-off? Options?
 - Should be possible to match up Types to classes in a custom Ontology--that seems like a pretty neat fature.
 - GraphQL Directives could be extremely helpful for deeper semantic connections -> OWL. For instance: 
-
-`
+```
   scalar Year @xsdRange(int)
-`
+```
+...could translate to:
 
-Could translate to:
-
-`
+```
 :Year
   a owl:Class ;
   rdfs:comment "Four digit Year is a part of a Date"
   rdfs:label "Year"
   rdfs:range xsd:int .
-`
+```
 
 - OWL 2 doesn't allow nulls so dealing with nullability is potentially either out of scope or completely annoying.
 
