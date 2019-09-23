@@ -22,7 +22,7 @@ We assume that you are working with a valid GraphQL Schema in some format.
 
 ## Examples
 
-GraphQL SDL: For the following GraphQL Schema:
+In this example we will start with a *non*-kitchen sink approach and just look at some high-level concepts. For the following GraphQL Schema (SDL):
 
 ```js
 "This is a Company"
@@ -48,6 +48,7 @@ type Organization {
   name: String!
 }
 
+"Four digit Year is a part of a Date"
 scalar Year
 ```
 
@@ -57,6 +58,7 @@ The OWL we produce looks like (assuming we use defaults, and omitting the import
 :Organization
   a owl:Class ;
   rdfs:comment "Organization is a group of people in a unified social context." ;
+  rdfs:domain :Thing ;
   rdfs:label "Organization" ;
   rdfs:subClassOf :Thing .
 
@@ -66,25 +68,57 @@ The OWL we produce looks like (assuming we use defaults, and omitting the import
   rdfs:label "Company" ;
   rdfs:subClassOf :http://foo.com#Organization .
 
-# TODO Choose what to map stringScalar to. There are a lot of options--tempting to just call these fields Literals as I think that is all we can infer from a scalar's exsitence within a type. There would be a difference between the OWL and the RDFS implementation
-:name
-  a owl:DatatypeProperty ;
-  rdfs:comment "Legal name of the Organization." ;
-  rdfs:domain :Thing ;
-  rdfs:label "name" ;
+:Year
+  a owl:Class ;
+  rdfs:comment "Four digit Year is a part of a Date"
+  rdfs:label "Year"
   rdfs:range xsd:string .
 
 :employees
   a owl:DatatypeProperty ;
   rdfs:comment "Number of employees in this Company." ;
-  rdfs:domain :Thing ;
+  rdfs:domain :Company ;
   rdfs:label "employees" ;
+  rdfs:range xsd:int .
+
+:id
+  a owl:Class ;
+  rdfs:comment "This is an arbitary comment for id:ID scalar. This is not an IRI." ;
+  rdfs:label "graphQL Mapped Id" ;
+  rdfs:subClassOf owl:Thing .
+
+:name
+  a owl:DatatypeProperty ;
+  rdfs:comment "Legal name of the Organization." ;
+  rdfs:domain :Organization ;
+  rdfs:label "name" ;
   rdfs:range xsd:string .
 
+:yearFounded
+  a :Year, owl:DatatypeProperty ;
+  rdfs:comment "Calendar year the Company was founded." ;
+  rdfs:domain :Company ;
+  rdfs:label "Year Founded" ;
+  rdfs:range xsd:string .
+```
 
-WIP EXAMPLE NOT DONE
+A couple of points from the example above:
+1. Note that with the naked Scalar (`scalar Year`) we cannot guarantee anything other than it is definitely serializable to String:
 
 ```
+:Year
+  ...
+  rdfs:range xsd:string .
+```
+
+2. We are mapping a StringScalar field here to `rdfs:range xsd:string`. There are a lot of options--tempting to just call these fields Literals as we can infer from a scalar's exsitence within a type. This could almost surely be configurable. There would be a difference between the OWL and the RDFS implementation. TODO discuss
+```
+:name
+  a owl:DatatypeProperty ;
+  ...
+  rdfs:range xsd:string .
+```
+
 
 
 ## Table of Conversions
@@ -146,6 +180,23 @@ Other
 - Should GraphQLString become a `rdfs:Literal` or a `rdf:string`? Possibly this would be an option. This same question can extend to OWL.
 - ID is a special Type -- handle as a one-off? Options?
 - Should be possible to match up Types to classes in a custom Ontology--that seems like a pretty neat fature.
+- GraphQL Directives could be extremely helpful for deeper semantic connections -> OWL. For instance: 
+
+`
+  scalar Year @xsdRange(int)
+`
+
+Could translate to:
+
+`
+:Year
+  a owl:Class ;
+  rdfs:comment "Four digit Year is a part of a Date"
+  rdfs:label "Year"
+  rdfs:range xsd:int .
+`
+
+- OWL 2 doesn't allow nulls so dealing with nullability is potentially either out of scope or completely annoying.
 
 .
 
